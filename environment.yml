@@ -1,0 +1,16 @@
+name: mol-gnn
+channels: [pytorch, nvidia, pyg, conda-forge, defaults]
+dependencies:
+  - python=3.10
+  - pytorch>=2.2
+  - pytorch-cuda=12.1  # remove this line if CPU-only
+  - pyg>=2.5
+  - scikit-learn
+  - pandas
+  - matplotlib
+  - rdkit
+  - pip
+  - pip:
+      - hydra-core
+      - omegaconf
+      - tensorboard
