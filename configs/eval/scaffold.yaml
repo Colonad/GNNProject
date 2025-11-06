@@ -1,0 +1,84 @@
+# ==============================================================================
+# Evaluation Preset — Scaffold Split
+# ==============================================================================
+# Purpose:
+#   Centralize the split strategy to "scaffold" for both training and evaluation
+#   CLIs. Compose this file with your data/model/train presets so that runs are
+#   reproducible and the split choice is explicit in the run config snapshot.
+#
+# Works with:
+#   - src/cli/train.py      (uses `eval` as an alias for split)
+#   - src/cli/evaluate.py   (expects the same `eval` key / semantics)
+#
+# Typical usage:
+#   # Train on ESOL with GIN using scaffold split
+#   python -m src.cli.train \
+#     +data=@configs/data/esol.yaml \
+#     +model=@configs/model/gin.yaml \
+#     +train=@configs/train/base.yaml \
+#     +eval=@configs/eval/scaffold.yaml \
+#     seed=0
+#
+#   # Evaluate a checkpoint (explicit ckpt path or out_dir containing best.ckpt)
+#   python -m src.cli.evaluate \
+#     +data=@configs/data/esol.yaml \
+#     +model=@configs/model/gin.yaml \
+#     +eval=@configs/eval/scaffold.yaml \
+#     +ckpt="runs/esol_gin_scaffold_seed0_2025xxxx-xxxxxx/best.ckpt" \
+#     runtime.quiet=true
+#
+# Notes:
+#   - You can still override `eval=random` on the CLI if you want to A/B the split.
+#   - For evaluation without a direct ckpt path, you may pass:
+#       runtime.out_dir="runs/esol_gin_scaffold_seed0_2025xxxx-xxxxxx"
+#     and the evaluator will look for best.ckpt there.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------ 
+# Split strategy (train/eval CLIs read this key)
+# ------------------------------------------------------------------------------
+eval: scaffold   # choices: scaffold | random
+
+# ------------------------------------------------------------------------------
+# Optional: runtime niceties appropriate for evaluation runs
+# ------------------------------------------------------------------------------
+runtime:
+  quiet: true         # suppresses verbose datamodule/model prints
+  out_dir: null       # when set to a run folder, evaluator will look for best.ckpt
+  cpu: false          # set true to force CPU eval
+  seed: 0             # stable evaluation ordering when needed
+
+# ------------------------------------------------------------------------------
+# (Optional) dataset-specific clarifications (safe to compose with data presets)
+# ------------------------------------------------------------------------------
+data:
+  # These fields are typically defined in your data preset (e.g., esol.yaml / qm9_small.yaml).
+  # Including them here (left as null) keeps this file dataset-agnostic while
+  # letting Hydra composition resolve from the data preset.
+  name: null          # e.g., ESOL | QM9
+  root: null          # e.g., data/
+  limit_n: null       # useful for quick/debug evals; None → full
+  target: null        # QM9 key (ignored for ESOL) unless overridden by target_index
+  target_index: null  # QM9 numeric target index
+
+# ------------------------------------------------------------------------------
+# (Optional) model echo — generally provided by model presets; listed here so you
+# can see at a glance which keys exist if you do want to override during eval.
+# ------------------------------------------------------------------------------
+model:
+  name: null          # "gin" | "mpnn" (normally set by model preset)
+  # The rest of model hyperparams come from configs/model/*.yaml.
+
+# ------------------------------------------------------------------------------
+# Meta / provenance (purely informational; not read by code)
+# ------------------------------------------------------------------------------
+meta:
+  description: "Evaluation preset selecting scaffold split; quiet eval defaults."
+  version: "1.0"
+  recommended_overrides:
+    - "+ckpt=...</best.ckpt>  # or runtime.out_dir=... (folder containing best.ckpt)"
+    - "runtime.quiet=false    # if you want verbose prints during eval"
+    - "seed=123               # deterministic dataloader shuffles if relevant"
+  caveats:
+    - "Ensure your data preset matches the checkpoint’s training dataset/split."
+    - "For QM9, confirm target/target_index match those used in training."

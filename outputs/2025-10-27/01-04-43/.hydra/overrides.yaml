@@ -1,0 +1,2 @@
+- +ckpt=runs/esol_gin/best.ckpt
+- runtime.quiet=true

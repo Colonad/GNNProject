@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/mnt/c/Users/Angel/Desktop/GNNs/project/GNNProject/src/cli/train.py", line 34, in <module>
+    from src.train.loop import build_argparser, run as run_loop
+  File "/mnt/c/Users/Angel/Desktop/GNNs/project/GNNProject/src/train/loop.py", line 26, in <module>
+    import torch
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/__init__.py", line 1850, in <module>
+    from torch import quantization as quantization
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/quantization/__init__.py", line 2, in <module>
+    from .quantize import *  # noqa: F403
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/quantization/quantize.py", line 10, in <module>
+    from torch.ao.quantization.quantize import (
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/ao/quantization/__init__.py", line 4, in <module>
+    from .fake_quantize import *  # noqa: F403
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/ao/quantization/fake_quantize.py", line 6, in <module>
+    from torch.ao.quantization.observer import (
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/ao/quantization/observer.py", line 16, in <module>
+    from torch.ao.quantization.utils import (
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/ao/quantization/utils.py", line 17, in <module>
+    NodePattern.__module__ = "torch.ao.quantization.utils"
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/typing.py", line 989, in __setattr__
+    super().__setattr__(attr, val)
+KeyboardInterrupt

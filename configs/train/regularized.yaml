@@ -1,0 +1,99 @@
+# ==============================================================================
+# Training Preset — Regularized
+# ==============================================================================
+# Purpose:
+#   - Strengthen regularization for models that overfit (train ≪ val/test error).
+#   - Increase dropout in the backbone/readout and bump weight decay.
+#   - Keep the preset model-agnostic (works for both GIN and MPNN).
+#
+# Typical symptoms this preset addresses:
+#   - Training loss much lower than validation/test loss.
+#   - Validation metrics plateau early and degrade after a few epochs.
+#
+# Usage examples:
+#   # ESOL + GIN with regularization
+#   python -m src.cli.train \
+#     +data=@configs/data/esol.yaml \
+#     +model=@configs/model/gin.yaml \
+#     +train=@configs/train/base.yaml \
+#     +train=@configs/train/regularized.yaml \
+#     eval=scaffold seed=0
+#
+#   # QM9 subset + MPNN regularized (can also stack with deep)
+#   python -m src.cli.train \
+#     +data=@configs/data/qm9_small.yaml \
+#     +model=@configs/model/mpnn.yaml \
+#     +train=@configs/train/base.yaml \
+#     +train=@configs/train/regularized.yaml \
+#     eval=random seed=7
+#
+# Notes:
+#   - This file overrides only a focused subset of `model:` and `train:` keys.
+#   - Safe to compose: base.yaml → (deep.yaml) → regularized.yaml
+#   - If you also include deep.yaml, you might reduce batch size to fit VRAM.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Model-side regularization
+# ------------------------------------------------------------------------------
+model:
+  # Increase dropout throughout encoder blocks and readout MLP.
+  # (Both GINNet and MPNNNet use this field consistently.)
+  dropout: 0.25
+
+  # Retain BatchNorm and residuals (help stabilize deeper nets).
+  # Toggle these only if you know your ablation plan:
+  # no_batch_norm: false
+  # no_residual:   false
+
+  # Readout can also be slightly wider but still regularized by dropout.
+  # Keep your selected readout_layers/readout_hidden_mult from model preset.
+  # readout_layers: 2
+  # readout_hidden_mult: 1.0
+
+# ------------------------------------------------------------------------------
+# Optimizer / schedule tweaks for regularization
+# ------------------------------------------------------------------------------
+train:
+  # Slightly lower LR and higher weight decay than base for better generalization.
+  lr: 8.0e-4
+  weight_decay: 5.0e-4
+
+  # Plateau is a good default when tightening regularization.
+  # If you prefer cosine warmup, keep it in deep.yaml instead.
+  scheduler: plateau
+
+  # Give validation a bit more room to improve under stronger regularization.
+  patience: 15
+  min_delta: 1.0e-4
+
+  # Standardizing targets often improves optimization stability for regression.
+  standardize_targets: true
+
+  # Batch size can remain the same as base; reduce if stacking with deep.yaml.
+  # batch_size: 256
+
+  # Optional regularizers that work well with stronger dropout:
+  # Enable EMA to smooth the evaluation weights (often improves val/test MAE/RMSE).
+  ema: true
+  ema_decay: 0.999
+
+  # Mixed precision is safe to keep off by default; enable on CUDA for speed.
+  # amp: true
+
+# ------------------------------------------------------------------------------
+# Practical guidance
+# ------------------------------------------------------------------------------
+meta:
+  description: >
+    Regularization preset: dropout↑ (0.25), weight_decay↑ (5e-4), lr↓ (8e-4),
+    patience↑ (15), target standardization on, EMA enabled.
+  version: "1.0"
+  recommended_overrides:
+    - "Stack with deep.yaml for capacity, then reduce train.batch_size if needed."
+    - "If training becomes underfit, try model.dropout=0.15 and/or lr=1e-3."
+    - "For very noisy targets, consider scheduler=cosine_warmup with warmup_epochs=5."
+    - "When VRAM is tight, use train.batch_size=128 (deep+regularized)."
+  caveats:
+    - "If validation loss stalls without improving, your model may be underfit → reduce dropout or weight_decay."
+    - "EMA adds a tiny memory overhead; disable with train.ema=false if necessary."

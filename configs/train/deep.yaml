@@ -1,0 +1,88 @@
+# ==============================================================================
+# Training Preset — Deep/Wide Model
+# ==============================================================================
+# Purpose:
+#   - Increase model capacity (depth/width) in a single include.
+#   - Tweak optimization settings that typically stabilize deeper nets.
+#
+# Usage (examples):
+#   # ESOL + GIN with deep preset
+#   python -m src.cli.train \
+#     +data=@configs/data/esol.yaml \
+#     +model=@configs/model/gin.yaml \
+#     +train=@configs/train/base.yaml \
+#     +train=@configs/train/deep.yaml \
+#     eval=scaffold seed=0
+#
+#   # QM9 + MPNN with deep preset
+#   python -m src.cli.train \
+#     +data=@configs/data/qm9_small.yaml \
+#     +model=@configs/model/mpnn.yaml \
+#     +train=@configs/train/base.yaml \
+#     +train=@configs/train/deep.yaml \
+#     eval=random seed=7
+#
+# Notes:
+#   - This file only overrides a subset of `model:` and `train:` keys.
+#   - Keep `configs/train/regularized.yaml` for stronger regularization if needed.
+#   - Safe to combine: base.yaml → deep.yaml → (optionally) regularized.yaml
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Model capacity overrides (apply to both GIN and MPNN configs)
+# ------------------------------------------------------------------------------
+model:
+  # Bigger backbone
+  hidden_dim: 256          # wider hidden size
+  num_layers: 8            # deeper stack
+
+  # Readout head beefed up
+  readout_layers: 3
+  readout_hidden_mult: 1.5
+
+  # Keep other architecture defaults from the selected model config
+  # (e.g., pool, act, batch_norm, residual, virtual_node/use_gru, init)
+
+# ------------------------------------------------------------------------------
+# Training adjustments for deeper models
+# ------------------------------------------------------------------------------
+train:
+  # More epochs and patience for larger nets; cosine warmup helps stabilize early training
+  epochs: 80
+  scheduler: cosine_warmup
+  warmup_epochs: 5
+
+  # Slightly smaller batch to accommodate larger memory footprint
+  batch_size: 192
+
+  # Early stopping tuned for longer runs
+  patience: 15
+  min_delta: 1.0e-4
+
+  # Standardize targets often helps with deeper regressors
+  standardize_targets: true
+
+  # Keep other optimization knobs from base.yaml (lr, weight_decay, etc.)
+  # You can still override on the CLI:
+  #   train.lr=8e-4 train.weight_decay=2e-4
+
+# ------------------------------------------------------------------------------
+# Optional, GPU-friendly tweaks (uncomment if you have CUDA headroom)
+# ------------------------------------------------------------------------------
+# train:
+#   amp: true           # enable mixed precision (CUDA only)
+#   ema: true           # exponential moving average of weights
+#   ema_decay: 0.9995
+
+# ------------------------------------------------------------------------------
+# Provenance
+# ------------------------------------------------------------------------------
+meta:
+  description: "Depth/width preset for GNNs: hidden_dim=256, num_layers=8, with cosine-warmup and longer patience."
+  version: "1.0"
+  source: "configs/train/deep.yaml"
+  recommended_overrides:
+    - "For tight VRAM: set train.batch_size=128"
+    - "For very deep (≥10 layers): consider +train=@configs/train/regularized.yaml"
+    - "GIN + virtual node: add model.virtual_node=true"
+    - "MPNN without GRU (faster, less stable): set model.use_gru=false"

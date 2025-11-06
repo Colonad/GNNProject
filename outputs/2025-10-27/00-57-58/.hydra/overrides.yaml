@@ -1,0 +1,4 @@
+- data.name=ESOL
+- eval=scaffold
+- model.name=gin
+- seed=0

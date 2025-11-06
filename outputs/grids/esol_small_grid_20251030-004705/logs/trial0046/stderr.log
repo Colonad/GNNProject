@@ -1,0 +1,44 @@
+Traceback (most recent call last):
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/mnt/c/Users/Angel/Desktop/GNNs/project/GNNProject/src/cli/train.py", line 34, in <module>
+    from src.train.loop import build_argparser, run as run_loop
+  File "/mnt/c/Users/Angel/Desktop/GNNs/project/GNNProject/src/train/loop.py", line 32, in <module>
+    from src.models.gin import GINConfig, GINNet
+  File "/mnt/c/Users/Angel/Desktop/GNNs/project/GNNProject/src/models/gin.py", line 46, in <module>
+    from torch_geometric.nn import GINConv, GINEConv, global_add_pool, global_mean_pool, global_max_pool
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch_geometric/__init__.py", line 13, in <module>
+    from .isinstance import is_torch_instance
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch_geometric/isinstance.py", line 8, in <module>
+    import torch._dynamo
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/_dynamo/__init__.py", line 2, in <module>
+    from . import convert_frame, eval_frame, resume_execution
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/_dynamo/convert_frame.py", line 48, in <module>
+    from . import config, exc, trace_rules
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/_dynamo/trace_rules.py", line 3467, in <module>
+    add(_name)
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/_dynamo/trace_rules.py", line 3343, in add
+    _recompile_re()
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/site-packages/torch/_dynamo/trace_rules.py", line 3327, in _recompile_re
+    SKIP_DIRS_RE = re.compile(rf"^[^\s<]*({'|'.join(map(re.escape, SKIP_DIRS))})")
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/re.py", line 251, in compile
+    return _compile(pattern, flags)
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/re.py", line 303, in _compile
+    p = sre_compile.compile(pattern, flags)
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/sre_compile.py", line 788, in compile
+    p = sre_parse.parse(p, flags)
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/sre_parse.py", line 955, in parse
+    p = _parse_sub(source, state, flags & SRE_FLAG_VERBOSE, 0)
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/sre_parse.py", line 444, in _parse_sub
+    itemsappend(_parse(source, state, verbose, nested + 1,
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/sre_parse.py", line 841, in _parse
+    p = _parse_sub(source, state, sub_verbose, nested + 1)
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/sre_parse.py", line 444, in _parse_sub
+    itemsappend(_parse(source, state, verbose, nested + 1,
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/sre_parse.py", line 530, in _parse
+    subpatternappend((LITERAL, _ord(this)))
+  File "/home/angel/miniconda3/envs/mol-gnn/lib/python3.10/sre_parse.py", line 174, in append
+    self.data.append(code)
+KeyboardInterrupt

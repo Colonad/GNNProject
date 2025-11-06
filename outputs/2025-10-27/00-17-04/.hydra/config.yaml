@@ -1,0 +1,48 @@
+data:
+  name: ESOL
+  root: data
+  limit_n: null
+  target: U0
+  target_index: null
+model:
+  name: gin
+  hidden_dim: 128
+  num_layers: 5
+  pool: mean
+  act: relu
+  dropout: 0.1
+  init: kaiming
+  no_batch_norm: false
+  no_residual: false
+  use_edge_attr: false
+  no_learn_eps: false
+  virtual_node: false
+  readout_layers: 2
+  readout_hidden_mult: 1.0
+  aggr: add
+  no_gru: false
+eval_cfg:
+  which_split: test
+  ckpt_path: /tmp/cli_eval_n2zpt_q2/train_out/best.ckpt
+  ensemble_glob: null
+  ensemble_paths: []
+  use_ema: false
+  standardize_targets: null
+  prefer_training_norm: true
+  dump_preds: false
+  preds_filename: preds.csv
+  amp: false
+runtime:
+  seed: 0
+  cpu: false
+  out_dir: /tmp/cli_eval_n2zpt_q2/train_out
+  quiet: false
+  eval: scaffold
+  train_frac: 0.8
+  val_frac: 0.1
+  num_workers: 4
+  batch_size: 256
+  pin_memory: false
+  persistent_workers: true
+  drop_last: false
+  shuffle_train: true

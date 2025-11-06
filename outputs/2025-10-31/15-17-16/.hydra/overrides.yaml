@@ -1,0 +1,4 @@
+- runtime.out_dir=/tmp/cli_eval_x1asw8dk/train_out
+- eval_cfg.which_split=test
+- eval_cfg.ensemble_glob=/tmp/cli_eval_x1asw8dk/train_out/*.ckpt
+- eval_cfg.dump_preds=false

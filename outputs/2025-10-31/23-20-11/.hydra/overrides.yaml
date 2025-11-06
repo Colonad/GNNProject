@@ -1,0 +1,15 @@
+- data.name=ESOL
+- data.split=scaffold
+- model.name=random_forest
+- model.rf_n_estimators_grid=[10,20]
+- model.rf_max_depth_grid=[None,10]
+- feat.kind=morgan
+- feat.morgan_bits=512
+- feat.morgan_radius=2
+- feat.n_jobs=0
+- train.sweep=true
+- train.standardize_targets=true
+- train.seed=1
+- runtime.out_dir=/tmp/cli_baseline_rf_tn6pitdn/out
+- runtime.dump_preds=false
+- runtime.quiet=true

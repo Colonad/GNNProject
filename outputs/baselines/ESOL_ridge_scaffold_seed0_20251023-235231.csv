@@ -1,0 +1,2 @@
+dataset,split,seed,N,D,train_size,val_size,test_size,alpha,fit_intercept,val_MAE,val_RMSE,test_MAE,test_RMSE,use_morgan,morgan_bits,morgan_radius,morgan_use_chirality,drop_constant,scale
+ESOL,scaffold,0,1128,1211,902,112,114,100.0,True,0.802475629507431,1.0516287339817934,0.8773530099475593,1.1253365287088843,1,1024,2,1,1,standard

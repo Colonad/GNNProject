@@ -1,0 +1,2 @@
+- eval_cfg.ckpt_path=/mnt/c/Users/Angel/Desktop/GNNs/project/GNNProject/runs/esol_gin_scaffold_seed0_20251027-005758/best.ckpt
+- runtime.quiet=true

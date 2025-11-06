@@ -1,0 +1,45 @@
+data:
+  name: ESOL
+  root: data
+  limit_n: null
+  target: U0
+  target_index: null
+  split: scaffold
+  train_frac: 0.8
+  val_frac: 0.1
+feat:
+  kind: morgan
+  morgan_bits: 1024
+  morgan_radius: 2
+  morgan_use_chirality: true
+  morgan_use_features: false
+  physchem_set: basic
+  n_jobs: 0
+  cache: true
+  cache_dir: null
+model:
+  name: ridge
+  ridge_alpha: 1.0
+  ridge_fit_intercept: true
+  ridge_normalize: false
+  rf_n_estimators: 300
+  rf_max_depth: null
+  rf_min_samples_split: 2
+  rf_min_samples_leaf: 1
+  rf_max_features: auto
+  rf_n_jobs: -1
+  scaler: standard
+  ridge_alphas: null
+  rf_n_estimators_grid: null
+  rf_max_depth_grid: null
+train:
+  standardize_targets: true
+  sweep: false
+  seed: 0
+runtime:
+  cpu: false
+  num_workers: 0
+  out_dir: /tmp/cli_baseline_ridge__0lxg3bl/out
+  quiet: true
+  dump_preds: true
+  save_model: true

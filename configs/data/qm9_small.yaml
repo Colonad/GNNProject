@@ -1,0 +1,228 @@
+# ==============================================================================
+# QM9 (Small Subset) — Data Configuration
+# ==============================================================================
+# Purpose:
+#   Curated, compact configuration for running quick experiments on QM9 by
+#   sub-sampling a small, deterministic subset (e.g., 5k–20k molecules).
+#   Mirrors the schema and naming conventions used by the ESOL config so both
+#   datamodules feel uniform in CLI usage and logging.
+#
+# Typical usage:
+#   python -m src.cli.train +data=@configs/data/qm9_small.yaml \
+#     eval=random model=mpnn train.standardize_targets=true seed=0
+#
+# Notes:
+#   - This file focuses on graph features used by our PyG GNNs (GIN/GINE/MPNN).
+#   - The CLI (`src/cli/train.py`) also accepts direct overrides like:
+#       data.name=QM9 data.limit_n=5000 data.target=U0
+#     This config simply centralizes sane defaults.
+# ==============================================================================
+
+# ---------------------------- #
+# Identity & Storage
+# ---------------------------- #
+name: QM9                              # Consumed by datamodule & CLI
+root: data                             # Dataset root used by PyG/QM9 loader
+raw_dir: ${root}/raw/qm9               # Informational; PyG may manage internally
+processed_dir: ${root}/processed/qm9   # Informational; PyG may manage internally
+cache_processed: true
+download_if_missing: true              # Let PyTorch Geometric fetch QM9 if absent
+
+# ---------------------------- #
+# Subsampling / “Small” setting
+# ---------------------------- #
+# Use a deterministic subset to speed up iteration (adjust as needed).
+subset:
+  enabled: true
+  limit_n: 5000                        # Effective size used by datamodule when provided
+  seed: 0                              # Deterministic sub-sampling
+
+# ---------------------------- #
+# Targets & Units
+# ---------------------------- #
+# QM9 offers many targets; we expose both a string key and an optional index.
+# If `index` is provided (int), it overrides `key`.
+target:
+  # Common QM9 keys: 'U0', 'U', 'H', 'G', 'Cv', 'gap', 'homo', 'lumo', 'zpve', etc.
+  key: "U0"
+  index: null
+  # Unit conversions (for logging / consistency). The datamodule may apply
+  # conversion for reporting while preserving original tensors for training.
+  units:
+    U0: "Hartree"                      # example metadata, not enforced in code
+    U:  "Hartree"
+    H:  "Hartree"
+    G:  "Hartree"
+    Cv: "cal/(mol K)"
+    gap: "eV"
+    homo: "eV"
+    lumo: "eV"
+    zpve: "Hartree"
+
+# ---------------------------- #
+# Split Strategy (informational)
+# ---------------------------- #
+# The CLI uses `eval=random|scaffold` and runtime.{train_frac,val_frac}.
+# Keeping the same fields here for discoverability / analysis notebooks.
+split:
+  strategy: random                     # QM9 commonly uses random splits
+  seed: 0
+  train_frac: 0.8
+  val_frac: 0.1
+  test_frac: 0.1
+
+# ---------------------------- #
+# Loader Defaults (informational)
+# ---------------------------- #
+loader:
+  batch_size: 256
+  num_workers: 4
+  pin_memory: false
+  persistent_workers: true
+  drop_last: false
+  shuffle_train: true
+
+# ---------------------------- #
+# Molecular Graph Construction
+# ---------------------------- #
+# QM9 ships with 3D coordinates; we also keep standard topological features.
+graph:
+  use_3d_coords: true                  # Retain pos (x,y,z) for nodes if provided
+  pos_key: "pos"                       # Field name expected by PyG’s QM9
+  add_hs: false                        # RDKit re-construction not required for QM9
+  sanitize: true                       # Safety check if RDKit is involved downstream
+  kekulize: false                      # QM9 is typically used without kekulization
+  strict_rdkit: false
+
+# ---------------------------- #
+# Node (Atom) Features
+# ---------------------------- #
+# Many QM9 recipes use learned embeddings from atomic numbers plus optional
+# continuous descriptors. We keep a flexible set similar to ESOL defaults.
+atoms:
+  # Categorical one-hots / embeddings
+  one_hot:
+    atomic_num: true
+    chirality: false                   # QM9 is neutral/small organics; rarely used
+    hybridization: false               # Often omitted for QM9 baselines
+    formal_charge_bucket: false
+    degree: true
+    num_hs: false
+  flags:
+    aromatic: true
+    in_ring: true
+  scalars:
+    mass: true
+    vdw_radius: false
+    electronegativity: false
+  # 3D-aware enhancements (optional)
+  coords:
+    include_pos: true                  # attach node pos to batch (separate from x)
+    # If projecting positions into x, configure below; by default we keep pos separate.
+    project_pos_into_x: false
+    pos_scale: 1.0                     # scale for normalized coordinates if projected
+  normalize_scalars: true
+  dtype: float32
+
+# ---------------------------- #
+# Edge (Bond) Features
+# ---------------------------- #
+# Our MPNN path requires continuous edge attributes. For QM9 we build bond-type,
+# conjugation, ring flags, etc., from the topology that PyG exposes (or via RDKit if needed).
+bonds:
+  enabled: true
+  one_hot:
+    bond_type: true                    # SINGLE/DOUBLE/TRIPLE/AROMATIC
+    stereo: false
+  flags:
+    conjugated: true
+    in_ring: true
+  scalars:
+    # Distance as continuous edge feature using 3D coords (if available):
+    distance_from_pos: true            # ||pos_i - pos_j|| (Å); computed on the fly
+    distance_clip:
+      enabled: true
+      max: 5.0                         # clip long-range edges if used explicitly
+    # Optional radial basis expansion of distances for MPNN/GINE:
+    rbf:
+      enabled: true
+      num_bins: 16
+      cutoff: 5.0
+  normalize_scalars: true
+  dtype: float32
+
+# ---------------------------- #
+# Fingerprints (for classical baselines / analysis)
+# ---------------------------- #
+fingerprints:
+  morgan:
+    enabled: true
+    n_bits: 2048
+    radius: 2
+    use_chirality: true
+    use_bond_types: true
+    n_jobs: 0
+  rdkit_2d:
+    enabled: false
+    normalize: true
+
+# ---------------------------- #
+# Feature Construction Policy
+# ---------------------------- #
+# Controls how the datamodule merges categorical, flags, and scalars into the
+# final node/edge feature matrices expected by GNNs.
+feature_policy:
+  node_stack_order: ["one_hot", "flags", "scalars"]   # concatenation order
+  edge_stack_order: ["one_hot", "flags", "scalars"]   # concatenation order
+  missing_edge_attr_fallback: "zeros"                 # zeros | error
+  cast_dtype: float32
+
+# ---------------------------- #
+# Standardization of Targets
+# ---------------------------- #
+# The training loop can z-score targets (train.standardize_targets=true). We
+# mirror that here as a dataset default for non-CLI workflows.
+target_standardization:
+  enabled: false
+  compute_on: "train_split"            # train_split | whole_dataset
+
+# ---------------------------- #
+# Filtering & Data Hygiene
+# ---------------------------- #
+filters:
+  drop_failed_parses: true
+  drop_isolated_nodes: true
+  assert_nonempty_graph: true
+  # Optional: discard molecules with atypical size to stabilize small runs
+  size_clip:
+    enabled: false
+    min_atoms: 3
+    max_atoms: 40
+
+# ---------------------------- #
+# Caching & Determinism
+# ---------------------------- #
+reproducibility:
+  seed: 0
+  write_manifest: true
+  manifest_path: ${processed_dir}/manifest_qm9_small.json
+
+# ---------------------------- #
+# Diagnostics
+# ---------------------------- #
+diagnostics:
+  verbose: true
+  sample_preview_n: 3
+  assert_strict_shapes: true
+  log_feature_dims: true               # Log x/edge_attr dims after construction
+
+# ---------------------------- #
+# Metadata (for manifests / reports)
+# ---------------------------- #
+meta:
+  citation: >
+    R. Ramakrishnan et al., “Quantum chemistry structures and properties of
+    134 kilo molecules,” Scientific Data 1, 2014. Processed via PyTorch
+    Geometric QM9 dataset wrapper.
+  license: "CC BY-NC (check original QM9 terms)"
+  homepage: "https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.QM9.html"

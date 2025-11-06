@@ -1,0 +1,5 @@
+- eval_cfg.ckpt_path=/tmp/cli_eval_dqrzwabx/train_out/best.ckpt
+- eval_cfg.use_ema=false
+- eval_cfg.which_split=test
+- eval_cfg.dump_preds=false
+- runtime.out_dir=/tmp/cli_eval_dqrzwabx/train_out

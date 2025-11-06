@@ -1,0 +1,11 @@
+- data.name=ESOL
+- data.split=scaffold
+- model.name=ridge
+- feat.kind=morgan
+- feat.morgan_bits=1024
+- feat.morgan_radius=2
+- feat.n_jobs=0
+- train.standardize_targets=true
+- runtime.out_dir=/tmp/cli_baseline_ridge_0dalkdzq/out
+- runtime.dump_preds=true
+- runtime.quiet=true

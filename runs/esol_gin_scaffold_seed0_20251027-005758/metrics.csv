@@ -1,0 +1,2 @@
+dataset,model,split,epochs,best_epoch,seed,val_MAE,val_RMSE,test_MAE,test_RMSE,lr,weight_decay,batch_size,hidden_dim,num_layers,ema,ema_decay,amp,scheduler,elapsed_sec
+ESOL,gin,scaffold,50,29,0,0.9273245930671692,1.2828482389450073,1.007144570350647,1.3004621267318726,0.001,0.0001,256,128,5,0,0.999,0,plateau,6.78

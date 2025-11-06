@@ -1,0 +1,184 @@
+# ==============================================================================
+# ESOL (Delaney) — Data Configuration
+# ==============================================================================
+# Purpose:
+#   Centralize all dataset- and featurization-specific knobs for the ESOL
+#   (water solubility) benchmark. This file is designed to be composed into
+#   your run configs via Hydra, e.g.:
+#
+#     python -m src.cli.train +data=@configs/data/esol.yaml model=gin eval=scaffold seed=0
+#
+#   or simply by overriding the fields you care about:
+#
+#     python -m src.cli.train data.name=ESOL data.root=data eval=scaffold seed=0
+#
+# Notes:
+#   - The training CLI (`src/cli/train.py`) controls split strategy via `eval`
+#     (scaffold|random) and split fractions via `runtime.train_frac/val_frac`.
+#     They’re duplicated here only for discoverability and may be ignored by
+#     callers that set them explicitly.
+#   - The ESOL datamodule should consult these featurization toggles to build
+#     node/edge features (PyTorch Geometric tensors). Baselines that use
+#     fingerprints (e.g., RF/XGB) can optionally reference the “fingerprints”
+#     section below.
+#   - RDKit is expected to be available for featurization.
+# ==============================================================================
+
+# ---------------------------- #
+# Identity & Storage
+# ---------------------------- #
+name: ESOL                         # Consumed by the training CLI/datamodule
+root: data                         # Top-level data directory
+raw_dir: ${root}/raw/esol          # Where the raw CSV lives (SMILES + target)
+processed_dir: ${root}/processed/esol
+cache_processed: true              # Reuse processed.pt if present
+download_if_missing: true          # If supported by the datamodule
+
+# ---------------------------- #
+# Files (defaults; datamodule may override)
+# ---------------------------- #
+files:
+  csv: ${raw_dir}/delaney-processed.csv   # canonical ESOL CSV path (SMILES + y)
+  smiles_column: "smiles"                  # column name with SMILES strings
+  target_column: "measured_log_solubility_in_mol_per_litre"  # ESOL target
+  id_column: null                          # optional unique identifier column
+
+# ---------------------------- #
+# Targets
+# ---------------------------- #
+target:
+  key: "U0"                     # Matches CLI default; ignored for ESOL but kept for API symmetry
+  index: null                   # Optional numeric index for multi-target datasets (QM9-style)
+  # If your ESOL CSV uses a different column name, set it via files.target_column above.
+
+# ---------------------------- #
+# Split Strategy (informational)
+# ---------------------------- #
+# The CLI uses `eval=scaffold|random` and runtime.{train_frac,val_frac} to decide splits.
+# These fields are here for discoverability and may be used by utilities/analysis scripts.
+split:
+  strategy: scaffold            # scaffold | random
+  seed: 0
+  train_frac: 0.8
+  val_frac: 0.1
+  test_frac: 0.1
+
+# ---------------------------- #
+# Loader Defaults (informational)
+# ---------------------------- #
+# The CLI (`src/cli/train.py`) passes these via argparse; keep here as defaults
+# for datamodule-only tools or analysis scripts.
+loader:
+  batch_size: 256
+  num_workers: 4
+  pin_memory: false
+  persistent_workers: true
+  drop_last: false
+  shuffle_train: true
+
+# ---------------------------- #
+# Molecular Graph Construction
+# ---------------------------- #
+graph:
+  add_hs: false                 # Add hydrogens during RDKit mol construction
+  kekulize: true
+  sanitize: true
+  # When true, will fail the example if RDKit sanitization fails for any row.
+  strict_rdkit: false
+
+# ---------------------------- #
+# Node (Atom) Features
+# ---------------------------- #
+atoms:
+  # Core categorical encodings (one-hot)
+  one_hot:
+    atomic_num: true            # Periodic table index (bounded vocab)
+    chirality: true
+    hybridization: true
+    formal_charge_bucket: true  # (-2..+2 buckets)
+    degree: true                # total degree (0..5)
+    num_hs: true                # attached hydrogens count (0..4)
+  # Binary flags
+  flags:
+    aromatic: true
+    in_ring: true
+  # Continuous scalars (normalized to zero mean / unit var over train set)
+  scalars:
+    mass: true                  # atomic mass
+    vdw_radius: false
+    electronegativity: false
+  # Post-processing
+  normalize_scalars: true
+  # Final projection to hidden size is handled by the model if needed
+  dtype: float32
+
+# ---------------------------- #
+# Edge (Bond) Features
+# ---------------------------- #
+bonds:
+  enabled: true                 # Set false to force GIN (node-only) behavior
+  one_hot:
+    bond_type: true             # SINGLE / DOUBLE / TRIPLE / AROMATIC
+    stereo: true                # E/Z/None buckets
+  flags:
+    conjugated: true
+    in_ring: true
+  scalars:
+    bond_length: false          # Requires 3D coords; off by default
+  normalize_scalars: true
+  dtype: float32
+
+# ---------------------------- #
+# Fingerprints (for baselines)
+# ---------------------------- #
+fingerprints:
+  morgan:
+    enabled: true
+    n_bits: 2048
+    radius: 2
+    use_chirality: true
+    use_bond_types: true
+    n_jobs: 0                   # 0 → RDKit default (single-thread); -1 → all cores if supported
+  rdkit_2d:
+    enabled: false              # RDKit 2D descriptors (optional)
+    normalize: true
+
+# ---------------------------- #
+# Filtering & Data Hygiene
+# ---------------------------- #
+filters:
+  drop_na_smiles: true
+  drop_na_targets: true
+  # Clip crazy target outliers if desired (rare for ESOL; disabled by default)
+  target_clip:
+    enabled: false
+    min: -20.0
+    max: 20.0
+
+# ---------------------------- #
+# Caching & Determinism
+# ---------------------------- #
+reproducibility:
+  seed: 0
+  # If true, persist a JSON manifest with hashes of raw/processed files so
+  # experiments can record the exact data snapshot.
+  write_manifest: true
+  manifest_path: ${processed_dir}/manifest.json
+
+# ---------------------------- #
+# Diagnostics
+# ---------------------------- #
+diagnostics:
+  verbose: true                 # Extra prints from the datamodule
+  sample_preview_n: 3           # Show first N SMILES and parsed metadata
+  assert_strict_shapes: true    # Guard against empty graphs/isolated nodes
+
+# ---------------------------- #
+# Metadata (free-form; written into manifests/artifacts)
+# ---------------------------- #
+meta:
+  citation: >
+    J. Delaney, "ESOL: Estimating Aqueous Solubility Directly from Molecular
+    Structure," 2004. Processed by MoleculeNet / RDKit-based loaders.
+  license: "CC BY-NC (check source)"
+  homepage: "https://deepchem.io/datasets/delaney-processed.csv"  # informational

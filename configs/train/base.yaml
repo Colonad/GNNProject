@@ -1,0 +1,115 @@
+# ==============================================================================
+# Training — Base Configuration (Hydra)
+# ==============================================================================
+# This file populates the `train:` and `runtime:` sections used by src/cli/train.py
+# (TrainCfg and RuntimeCfg dataclasses). It is safe to compose with data/model
+# configs and grid files. Everything here can be overridden from the CLI.
+#
+# Examples:
+#   # ESOL + GIN, scaffold, using this base:
+#   python -m src.cli.train \
+#       +data=@configs/data/esol.yaml \
+#       +model=@configs/model/gin.yaml \
+#       +train=@configs/train/base.yaml \
+#       eval=scaffold seed=0
+#
+#   # Override a few knobs:
+#   python -m src.cli.train +train=@configs/train/base.yaml \
+#       train.epochs=100 train.standardize_targets=true train.scheduler=cosine_warmup \
+#       train.warmup_epochs=3 runtime.seed=7
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Optimization & loop behavior (maps to TrainCfg in src/cli/train.py)
+# ------------------------------------------------------------------------------
+train:
+  # --- core optimization ---
+  epochs: 50                 # total training epochs
+  batch_size: 256            # graphs per batch
+  num_workers: 4             # DataLoader workers
+  lr: 1.0e-3                 # AdamW learning rate
+  weight_decay: 1.0e-4       # AdamW weight decay
+  scheduler: plateau         # none | cosine | cosine_warmup | plateau
+
+  # --- dataloader behavior ---
+  pin_memory: false          # true recommended on CUDA
+  persistent_workers: true   # requires num_workers > 0
+  drop_last: false
+  shuffle_train: true
+
+  # --- early stopping on val MAE ---
+  patience: 10               # epochs without improvement before stop
+  min_delta: 1.0e-4          # required MAE improvement to reset patience
+
+  # --- target normalization ---
+  standardize_targets: false # if true, train on z-scored y; metrics reported de-standardized
+  warmup_epochs: 0           # only used when scheduler=cosine_warmup
+
+  # --- EMA & AMP (mixed precision) ---
+  ema: false                 # exponential moving average of weights
+  ema_decay: 0.999
+  amp: false                 # CUDA only; ignored on CPU
+
+# ------------------------------------------------------------------------------
+# Runtime / bookkeeping (maps to RuntimeCfg in src/cli/train.py)
+# ------------------------------------------------------------------------------
+runtime:
+  seed: 0                    # master seed (also exposed as top-level alias `seed` at CLI)
+  cpu: false                 # force CPU even if CUDA is available
+  out_dir: null              # if null, auto-generates runs/<dataset>_<model>_<split>_seed<seed>_<ts>
+  quiet: false               # reduce datamodule/model prints
+
+  # Dataset split ratios (train/val; test implied by remainder)
+  train_frac: 0.80
+  val_frac: 0.10
+
+# ------------------------------------------------------------------------------
+# Optional presets (import with: +train.presets=<name>)
+# These simply override keys in the sections above.
+# ------------------------------------------------------------------------------
+presets:
+  fast_debug:
+    # Small, quick runs to verify plumbing
+    epochs: 3
+    batch_size: 64
+    num_workers: 0
+    scheduler: none
+    patience: 2
+    amp: false
+    ema: false
+    standardize_targets: false
+  cosine_warmup_small:
+    scheduler: cosine_warmup
+    warmup_epochs: 3
+    epochs: 60
+    lr: 1.0e-3
+    weight_decay: 1.0e-4
+  plateau_long:
+    scheduler: plateau
+    epochs: 150
+    patience: 15
+    min_delta: 5.0e-5
+    lr: 1.0e-3
+    weight_decay: 2.5e-4
+  amp_cuda:
+    amp: true
+    batch_size: 384
+    pin_memory: true
+  ema_strong:
+    ema: true
+    ema_decay: 0.9995
+    patience: 12
+    min_delta: 1.0e-4
+
+# ------------------------------------------------------------------------------
+# Provenance (handy for manifests/reports)
+# ------------------------------------------------------------------------------
+meta:
+  description: "Base training defaults for molecular GNNs (ESOL/QM9) aligned with TrainCfg/RuntimeCfg."
+  version: "1.0"
+  source: "configs/train/base.yaml"
+  notes:
+    - "Turn on train.standardize_targets=true for targets with large dynamic range."
+    - "Use scheduler=cosine_warmup with warmup_epochs≈3–5 for larger epochs."
+    - "EMA can stabilize eval; start with ema=true, ema_decay≈0.999–0.9995."
+    - "AMP usually requires CUDA; keep pin_memory=true and larger batch_size."

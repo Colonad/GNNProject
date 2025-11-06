@@ -1,0 +1,103 @@
+# ==============================================================================
+# Model: MPNN (NNConv-based Message Passing Neural Network) — Training CLI Schema
+# ==============================================================================
+# This file follows the **ModelCfg** schema defined in src/cli/train.py
+# (NOT the raw MPNNConfig class). The CLI converts these fields into argparse
+# flags for src/train/loop.py. You can override any key from the command line.
+#
+# Typical usages:
+#   # Plain MPNN on ESOL (requires datamodule to provide edge_attr):
+#   python -m src.cli.train +model=@configs/model/mpnn.yaml data.name=ESOL eval=scaffold seed=0
+#
+#   # QM9 with a subset and MPNN:
+#   python -m src.cli.train +model=@configs/model/mpnn.yaml \
+#       data.name=QM9 data.limit_n=5000 data.target=U0 eval=random seed=7
+#
+# Notes:
+# - Your datamodule must provide `edge_attr`; MPNN will raise if edge_attr is missing.
+# - `aggr`, `no_gru` are meaningful here; `use_edge_attr` is ignored by the MPNN model but harmless.
+# ==============================================================================
+
+model:
+  # ----------------------------------------------------------
+  # Identity
+  # ----------------------------------------------------------
+  name: mpnn               # gin | mpnn  (MPNN here)
+
+  # ----------------------------------------------------------
+  # Core architecture (shared schema from ModelCfg)
+  # ----------------------------------------------------------
+  hidden_dim: 128          # Node embedding width
+  num_layers: 6            # Message-passing depth (MPNN commonly deeper than GIN)
+  pool: mean               # sum | mean | max (graph readout)
+  act: relu                # relu | gelu | leaky_relu | elu
+  dropout: 0.10            # Dropout in blocks/readout
+  init: kaiming            # kaiming | xavier | none
+
+  # ----------------------------------------------------------
+  # Normalization / residuals (flip flags)
+  #   BatchNorm ON  by default  → no_batch_norm=false
+  #   Residuals ON by default   → no_residual=false
+  # ----------------------------------------------------------
+  no_batch_norm: false     # true → adds --no-batch-norm
+  no_residual: false       # true → adds --no-residual
+
+  # ----------------------------------------------------------
+  # Readout head (applies to both GIN/MPNN backends)
+  # ----------------------------------------------------------
+  readout_layers: 2        # ≥1; linear layers after pooling
+  readout_hidden_mult: 1.0 # width multiplier for hidden readout layers
+
+  # ----------------------------------------------------------
+  # MPNN-specific knobs
+  # ----------------------------------------------------------
+  aggr: add                # add | mean | max (aggregation inside NNConv)
+  no_gru: false            # true → disable GRU state updates (default uses GRU)
+
+  # ----------------------------------------------------------
+  # GIN-only knobs (kept for schema compatibility; ignored by MPNN)
+  # ----------------------------------------------------------
+  use_edge_attr: true      # harmless here; MPNN always consumes edge_attr if provided
+  no_learn_eps: false      # GIN-only
+  virtual_node: false      # GIN-only
+
+# ------------------------------------------------------------------------------
+# Preset bundles (optional). To use:
+#   +model=@configs/model/mpnn.yaml +preset=fast_debug
+# then override fields explicitly or load a separate YAML in practice.
+# ------------------------------------------------------------------------------
+presets:
+  fast_debug:
+    hidden_dim: 64
+    num_layers: 3
+    dropout: 0.0
+    no_batch_norm: true
+    no_residual: true
+    no_gru: true
+  strong_mpnn:
+    hidden_dim: 256
+    num_layers: 8
+    dropout: 0.1
+    no_batch_norm: false
+    no_residual: false
+    aggr: add
+    no_gru: false
+    readout_layers: 3
+    readout_hidden_mult: 1.5
+  memory_friendly:
+    hidden_dim: 96
+    num_layers: 5
+    dropout: 0.05
+    no_gru: true
+
+# ------------------------------------------------------------------------------
+# Documentation / provenance (kept for manifests & reports)
+# ------------------------------------------------------------------------------
+meta:
+  description: "MPNN (NNConv + optional GRU) defaults for molecular property prediction."
+  version: "1.0"
+  source: "configs/model/mpnn.yaml"
+  notes:
+    - "Ensure the datamodule emits edge_attr; otherwise MPNN will raise."
+    - "Try aggr=mean or max if add shows instability on a dataset."
+    - "Disable GRU (no_gru=true) for faster iterations or low-memory environments."

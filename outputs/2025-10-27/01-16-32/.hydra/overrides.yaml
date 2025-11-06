@@ -1,0 +1,2 @@
+- +ckpt=runs/esol_gin_scaffold_seed0_20251027-005758/best.ckpt
+- runtime.quiet=true

@@ -1,0 +1,5 @@
+- runtime.out_dir=/tmp/cli_eval_yysyhydx/train_out
+- eval_cfg.which_split=test
+- eval_cfg.dump_preds=true
+- eval_cfg.preds_filename=/tmp/cli_eval_yysyhydx/train_out/preds.csv
+- eval_cfg.use_ema=true

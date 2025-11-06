@@ -1,0 +1,213 @@
+# configs/grids/esol_grid.yaml
+# Comprehensive hyperparameter grid for ESOL molecular property prediction.
+# Works with `python -m src.cli.grid_run +grids=esol_grid data.name=ESOL eval=scaffold --jobs 1`
+# You can also pass base overrides (e.g., eval=scaffold, runtime.device=cuda).
+
+# -------------------------------
+# Dataset & preprocessing options
+# -------------------------------
+data:
+  name: ESOL                 # fixed by design for this grid
+  # If your datamodule allows an explicit CSV path, you may set it here (left None to use default).
+  csv_path: null
+  # Column names are left to your datamodule defaults; override only if needed:
+  # smiles_column: "smiles"
+  # target_column: "y"
+  # Optional data caching/location:
+  root: "data"               # where datasets/artifacts live
+  # RDKit preprocessing flags (toggle if your loader supports them)
+  rdkit:
+    sanitize: [true]
+    kekulize: [false, true]
+    add_hs: [false]          # leave Hs implicit unless you know your model expects them
+    largest_fragment_only: [true]
+  # Featurization toggles (project-specific; safe to ignore if unused by your pipeline)
+  featurizer:
+    atom_features: ["basic", "basic_charges"]   # e.g., categorical atom type vs. + formal charge
+    bond_features: ["basic"]                    # e.g., bond type, conjugation, ring
+    use_ring_features: [false, true]
+    use_chirality: [false, true]
+  # Splitting happens at the CLI via `eval=scaffold`, but keep knobs for completeness:
+  split:
+    type: ["scaffold"]       # keep as a list so grid expansion is consistent
+    ratios: [[0.8, 0.1, 0.1]]  # train/val/test
+
+# -------------------------------
+# Training configuration
+# -------------------------------
+train:
+  epochs: [150, 300]         # ESOL is small; longer schedules stabilize
+  batch_size: [64, 128]      # tradeoff between stability and speed
+  grad_clip_norm: [0.0, 1.0] # 0.0 disables clipping
+  early_stopping:
+    enabled: [true]
+    monitor: ["val/mae"]     # primary objective for ESOL
+    mode: ["min"]
+    patience: [30]           # generous to allow cosine schedules to converge
+    min_delta: [0.0]
+
+  optimizer:
+    name: ["adam", "adamw"]
+    lr: [5.0e-4, 1.0e-3, 2.0e-3]
+    weight_decay: [0.0, 1.0e-5, 1.0e-4]
+
+  scheduler:
+    # Choose one of: cosine, plateau
+    name: ["cosine", "plateau"]
+    cosine:
+      # Used when scheduler.name == "cosine"
+      t_max_frac: [1.0]      # fraction of total epochs used for one cosine cycle
+      warmup_frac: [0.0, 0.1]
+      min_lr_frac: [0.0]     # final lr = min_lr_frac * base_lr
+    plateau:
+      # Used when scheduler.name == "plateau"
+      monitor: ["val/mae"]
+      mode: ["min"]
+      patience: [10]
+      factor: [0.5]
+      cooldown: [0]
+      min_lr: [1.0e-6]
+
+  # Mixed precision / deterministic flags (if your runner supports them)
+  amp: 
+    enabled: [false, true]
+  deterministic: [false, true]
+
+# -------------------------------
+# Model backbone & architecture
+# -------------------------------
+model:
+  # Sweep over three popular backbones; ensure your code accepts these names:
+  name: ["gin", "gcn", "graphsage"]
+
+  # Shared hyperparameters (used by all backbones unless the tool ignores them)
+  hidden_dim: [64, 128, 256]
+  num_layers: [3, 5, 7]
+  dropout: [0.0, 0.1, 0.2]
+  residual: [true]
+  activation: ["relu", "prelu"]   # if unsupported, your model can ignore
+
+  pooling:
+    # Global graph pooling function
+    readout: ["add", "mean"]      # "add" often best for counts/aggregations
+    mlp_head_layers: [1, 2]       # MLP layers after pooling
+    mlp_head_hidden: [128, 256]   # hidden size of MLP head
+
+  # GIN-specific knobs (ignored by others if not applicable)
+  gin:
+    train_eps: [false, true]
+    aggregator: ["sum"]           # canonical GIN
+    mlp_layers_per_block: [2]     # #layers per GIN block MLP
+
+  # GCN-specific knobs
+  gcn:
+    improved: [false]
+    add_self_loops: [true]
+    normalize: [true]
+
+  # GraphSAGE-specific knobs
+  graphsage:
+    aggr: ["mean", "max"]
+    normalize: [false, true]
+
+# -------------------------------
+# Regularization & augmentation
+# -------------------------------
+reg:
+  # Feature & edge drop augmentations if your model supports them
+  drop_edge_rate: [0.0]
+  drop_node_feature_rate: [0.0]
+  l2_on_head: [0.0, 1.0e-4]
+
+# -------------------------------
+# Loss & metrics
+# -------------------------------
+loss:
+  name: ["l1"]                 # MAE-targeted (L1). Use "mse" to target RMSE if desired.
+  # If you support label transforms (e.g., standardize targets), expose here:
+  transform: ["none"]
+
+metrics:
+  primary: ["mae"]             # grid_run will primarily look at metrics.json/metrics.csv
+  report: [["mae", "rmse", "r2"]]
+
+# -------------------------------
+# Runtime & logging
+# -------------------------------
+runtime:
+  device: ["auto"]             # "auto" -> cuda if available else cpu
+  num_workers: [2, 4]          # data loader workers
+  # out_dir is provided by grid_run per-trial; no need to specify here
+  seed: [0, 1, 2, 3, 4]        # 5 seeds for robust estimates
+  tqdm: [true]
+  quiet: [false]
+
+# -------------------------------
+# Notes on combinatorics
+# -------------------------------
+# This grid is intentionally rich. The raw cartesian product is large:
+#   |split|=1
+# * |rdkit.sanitize|=1
+# * |rdkit.kekulize|=2
+# * |rdkit.add_hs|=1
+# * |rdkit.largest_fragment_only|=1
+# * |featurizer.atom_features|=2
+# * |featurizer.bond_features|=1
+# * |featurizer.use_ring_features|=2
+# * |featurizer.use_chirality|=2
+# * |epochs|=2
+# * |batch_size|=2
+# * |grad_clip_norm|=2
+# * |early_stopping.enabled|=1
+# * |early_stopping.monitor|=1
+# * |early_stopping.mode|=1
+# * |early_stopping.patience|=1
+# * |early_stopping.min_delta|=1
+# * |optimizer.name|=2
+# * |optimizer.lr|=3
+# * |optimizer.weight_decay|=3
+# * |scheduler.name|=2
+# * |scheduler.cosine.t_max_frac|=1
+# * |scheduler.cosine.warmup_frac|=2
+# * |scheduler.cosine.min_lr_frac|=1
+# * |scheduler.plateau.monitor|=1
+# * |scheduler.plateau.mode|=1
+# * |scheduler.plateau.patience|=1
+# * |scheduler.plateau.factor|=1
+# * |scheduler.plateau.cooldown|=1
+# * |scheduler.plateau.min_lr|=1
+# * |amp.enabled|=2
+# * |deterministic|=2
+# * |model.name|=3
+# * |hidden_dim|=3
+# * |num_layers|=3
+# * |dropout|=3
+# * |residual|=1
+# * |activation|=2
+# * |pooling.readout|=2
+# * |pooling.mlp_head_layers|=2
+# * |pooling.mlp_head_hidden|=2
+# * |gin.train_eps|=2
+# * |gin.aggregator|=1
+# * |gin.mlp_layers_per_block|=1
+# * |gcn.improved|=1
+# * |gcn.add_self_loops|=1
+# * |gcn.normalize|=1
+# * |graphsage.aggr|=2
+# * |graphsage.normalize|=2
+# * |reg.drop_edge_rate|=1
+# * |reg.drop_node_feature_rate|=1
+# * |reg.l2_on_head|=2
+# * |loss.name|=1
+# * |loss.transform|=1
+# * |metrics.primary|=1
+# * |metrics.report|=1
+# * |runtime.device|=1
+# * |runtime.num_workers|=2
+# * |runtime.seed|=5
+#
+# This will explode to many combinations. Use:
+#   --max-trials <N>
+#   --resume
+#   --jobs <N>
+# to manage compute, or trim dimensions above as needed.

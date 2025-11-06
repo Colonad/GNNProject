@@ -1,0 +1,124 @@
+# configs/grids/esol_small_grid.yaml
+# Purpose: Small, balanced ESOL sweep (~32 trials) for quick iteration and CI.
+# Run:
+#   python -m src.cli.grid_run +grids=esol_small_grid eval=scaffold --jobs 1
+# Practical warm-up:
+#   python -m src.cli.grid_run +grids=esol_small_grid eval=scaffold --max-trials 16 --jobs 4
+
+# -------------------------------
+# Dataset & preprocessing (fixed)
+# -------------------------------
+data:
+  name: ESOL
+  root: "data"
+  rdkit:
+    sanitize: [true]
+    kekulize: [false]
+    add_hs: [false]
+    largest_fragment_only: [true]
+  featurizer:
+    atom_features: ["basic"]     # keep consistent for small grid
+    bond_features: ["basic"]
+    use_ring_features: [false]
+    use_chirality: [false]
+  split:
+    type: ["scaffold"]
+    ratios: [[0.8, 0.1, 0.1]]
+
+# -------------------------------
+# Training config (tight defaults)
+# -------------------------------
+train:
+  epochs: [200]                  # stable yet not too long for ESOL
+  batch_size: [128]
+  grad_clip_norm: [0.0]
+  early_stopping:
+    enabled: [true]
+    monitor: ["val/mae"]
+    mode: ["min"]
+    patience: [20]
+    min_delta: [0.0]
+
+  optimizer:
+    name: ["adamw"]
+    lr: [1.0e-3]                 # keep single LR here to limit trials
+    weight_decay: [0.0, 1.0e-4]  # light L2 sweep (x2)
+
+  scheduler:
+    name: ["cosine"]
+    cosine:
+      t_max_frac: [1.0]
+      warmup_frac: [0.1]
+      min_lr_frac: [0.0]
+
+  amp:
+    enabled: [true]              # speed on GPU; safe on CPU (no-op in many stacks)
+  deterministic: [true]
+
+# -------------------------------
+# Model (coverage without explosion)
+# -------------------------------
+model:
+  name: ["gin", "gcn"]           # (x2)
+
+  # Keep width fixed; vary depth & dropout
+  hidden_dim: [64, 128] # 2
+  num_layers: [4, 6]             # (x2)
+  dropout: [0.0, 0.1]            # (x2)
+  residual: [true]
+  activation: ["relu"]
+
+  pooling:
+    readout: ["add"]             # fixed for small grid
+    mlp_head_layers: [1]
+    mlp_head_hidden: [128]
+
+  # Keep backbone-specific knobs fixed to avoid multiplying combinations
+  gin:
+    train_eps: [false]
+    aggregator: ["sum"]
+    mlp_layers_per_block: [2]
+
+  gcn:
+    improved: [false]
+    add_self_loops: [true]
+    normalize: [true]
+
+# -------------------------------
+# Regularization (fixed)
+# -------------------------------
+reg:
+  drop_edge_rate: [0.0]
+  drop_node_feature_rate: [0.0]
+  l2_on_head: [0.0]
+
+# -------------------------------
+# Loss & metrics (fixed)
+# -------------------------------
+loss:
+  name: ["l1"]                   # MAE-targeted
+
+metrics:
+  primary: ["mae"]
+  report: [["mae", "rmse", "r2"]]
+
+# -------------------------------
+# Runtime & logging
+# -------------------------------
+runtime:
+  device: ["auto"]
+  num_workers: [4]
+  seed: [0, 1, 2, 3]                
+  tqdm: [true]
+  quiet: [false]
+
+# -------------------------------
+# Trial count sanity check
+# -------------------------------
+# Total combinations:
+#   model.name (2)
+# * num_layers (2)
+# * dropout (2)
+# * optimizer.weight_decay (2)
+# * runtime.seed (2)
+# = 2 * 2 * 2 * 2 * 2 = 32 trials

@@ -1,0 +1,50 @@
+data:
+  name: ESOL
+  root: data
+  limit_n: null
+  target: U0
+  target_index: null
+model:
+  name: gin
+  hidden_dim: 128
+  num_layers: 5
+  pool: mean
+  act: relu
+  dropout: 0.1
+  init: kaiming
+  no_batch_norm: false
+  no_residual: false
+  use_edge_attr: false
+  no_learn_eps: false
+  virtual_node: false
+  readout_layers: 2
+  readout_hidden_mult: 1.0
+  aggr: add
+  no_gru: false
+train:
+  epochs: 50
+  batch_size: 256
+  num_workers: 4
+  lr: 0.001
+  weight_decay: 0.0001
+  scheduler: plateau
+  pin_memory: false
+  persistent_workers: true
+  drop_last: false
+  shuffle_train: true
+  patience: 10
+  min_delta: 0.0001
+  standardize_targets: false
+  warmup_epochs: 0
+  ema: false
+  ema_decay: 0.999
+  amp: false
+runtime:
+  seed: 0
+  cpu: false
+  out_dir: null
+  quiet: false
+  train_frac: 0.8
+  val_frac: 0.1
+eval: scaffold
+seed: 0
