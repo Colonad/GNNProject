@@ -261,16 +261,30 @@ class MPNNNet(nn.Module):
         Returns:
             y_hat: [num_graphs, out_dim]
         """
-        x, edge_index, edge_attr, batch_idx = batch.x, batch.edge_index, getattr(batch, "edge_attr", None), batch.batch
+        # Unpack batch
+        x = batch.x
+        edge_index = batch.edge_index
+        edge_attr = getattr(batch, "edge_attr", None)
+        batch_idx = batch.batch
+
         if edge_attr is None:
             raise ValueError("MPNN requires edge_attr; got None. Provide bond features (type/order/aromatic).")
 
+        # --- Ensure floating dtypes for Linear / NNConv ---
+        if not torch.is_floating_point(x):
+            x = x.float()
+        if not torch.is_floating_point(edge_attr):
+            edge_attr = edge_attr.float()
+
+        # Project node features to hidden dimension
         h = self.input_proj(x)  # [N, hidden]
         h0 = h
 
         # For GRU update we need shape [1, N, hidden]
         if self.gru is not None:
             h_gru = h.unsqueeze(0)  # (1, N, H)
+
+        h_prev = h  # initialize for residuals
 
         for l, (conv, norm, drop) in enumerate(zip(self.convs, self.norms, self.drops)):
             m = conv(h, edge_index, edge_attr)  # message -> [N, H]
@@ -290,7 +304,7 @@ class MPNNNet(nn.Module):
 
             # Residual connection (skip from input of the layer)
             if self.cfg.residual:
-                h = h + h0 if l == 0 else h + h_prev
+                h = h + (h0 if l == 0 else h_prev)
 
             h_prev = h
 
@@ -312,6 +326,7 @@ class MPNNNet(nn.Module):
             out = self._posthoc_calibrator(out)
 
         return out
+
 
 
 

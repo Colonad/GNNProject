@@ -124,7 +124,7 @@ run_exp_A() {
       python -m src.cli.train \
         $(train_common) \
         "eval=${split}" \
-        "model=gin" \
+        "model.name=gin" \
         "model.num_layers=5" \
         "seed=${seed}"
 
@@ -133,12 +133,14 @@ run_exp_A() {
       python -m src.cli.train \
         $(train_common) \
         "eval=${split}" \
-        "model=mpnn" \
+        "model.name=mpnn" \
         "model.num_layers=6" \
         "seed=${seed}"
     done
   done
 }
+
+
 
 # ============================================================================
 # B) Depth ablation: layers ∈ {2,4,6,8} for GIN/MPNN; (track runtime via summary.json)
@@ -153,16 +155,15 @@ run_exp_B() {
       python -m src.cli.train \
         $(train_common) \
         "eval=${split}" \
-        "model=gin" \
+        "model.name=gin" \
         "model.num_layers=${L}" \
         "seed=${seed}"
 
       # MPNN (keep consistent depth)
-      log "B | MPNN | L=${L} seed=${seed}"
       python -m src.cli.train \
         $(train_common) \
         "eval=${split}" \
-        "model=mpnn" \
+        "model.name=mpnn" \
         "model.num_layers=${L}" \
         "seed=${seed}"
     done
@@ -186,10 +187,9 @@ run_exp_C() {
     python -m src.cli.train \
       $(train_common) \
       "eval=${split}" \
-      "model=mpnn" \
+      "model.name=mpnn" \
       "model.num_layers=6" \
       "seed=${seed}"
-
     # Without edges:
     # Preferred (if available):
     #   python -m src.cli.train $(train_common) "eval=${split}" "model=mpnn" "data.use_edge_attr=false" "seed=${seed}"
@@ -198,7 +198,7 @@ run_exp_C() {
     python -m src.cli.train \
       $(train_common) \
       "eval=${split}" \
-      "model=gin" \
+      "model.name=gin" \
       "model.num_layers=6" \
       "seed=${seed}"
   done
@@ -222,7 +222,7 @@ run_exp_D() {
         python -m src.cli.train \
           $(train_common) \
           "eval=${split}" \
-          "model=gin" \
+          "model.name=gin" \
           "model.num_layers=6" \
           "train.weight_decay=${wd}" \
           "model.dropout=${d}" \
@@ -233,7 +233,7 @@ run_exp_D() {
         python -m src.cli.train \
           $(train_common) \
           "eval=${split}" \
-          "model=mpnn" \
+          "model.name=mpnn" \
           "model.num_layers=6" \
           "train.weight_decay=${wd}" \
           "model.dropout=${d}" \
@@ -283,7 +283,7 @@ run_exp_E() {
     python -m src.cli.train \
       $(train_common) \
       "eval=${split}" \
-      "model=gin" \
+      "model.name=gin" \
       "model.num_layers=${best_L}" \
       "seed=${seed}"
 
@@ -291,7 +291,7 @@ run_exp_E() {
     python -m src.cli.train \
       $(train_common) \
       "eval=${split}" \
-      "model=mpnn" \
+      "model.name=mpnn" \
       "model.num_layers=${best_L}" \
       "seed=${seed}"
   done
@@ -315,27 +315,29 @@ run_exp_F() {
     python -m src.cli.train \
       $(train_common) \
       "eval=${split}" \
-      "model=gin" \
+      "model.name=gin" \
       "model.num_layers=6" \
       "model.dropout=0.0" \
       "seed=${seed}"
 
     # With dropout
     log "F | GIN dropout=${CALIB_DROPOUT} | seed=${seed}"
+
     python -m src.cli.train \
       $(train_common) \
       "eval=${split}" \
-      "model=gin" \
+      "model.name=gin" \
       "model.num_layers=6" \
       "model.dropout=${CALIB_DROPOUT}" \
       "seed=${seed}"
+
 
     # MPNN — mirrored
     log "F | MPNN no-dropout | seed=${seed}"
     python -m src.cli.train \
       $(train_common) \
       "eval=${split}" \
-      "model=mpnn" \
+      "model.name=mpnn" \
       "model.num_layers=6" \
       "model.dropout=0.0" \
       "seed=${seed}"
@@ -344,7 +346,7 @@ run_exp_F() {
     python -m src.cli.train \
       $(train_common) \
       "eval=${split}" \
-      "model=mpnn" \
+      "model.name=mpnn" \
       "model.num_layers=6" \
       "model.dropout=${CALIB_DROPOUT}" \
       "seed=${seed}"
@@ -359,15 +361,16 @@ run_exp_F() {
 # ============================================================================
 aggregate_all() {
   log "Aggregating CSVs into report tables…"
-  # Example: aggregate everything under runs/ plus the baseline outputs
+  # Aggregate everything under runs/ plus the baseline outputs
   python -m src.analysis.aggregate_csv \
     --roots "runs" "${BASE_OUT_ROOT}" \
     --out "report/tables/summary.csv" \
-    --group-keys dataset model split \
-    --metrics test_MAE test_RMSE val_MAE val_RMSE \
-    --stat mean std
+    --group-by dataset model split \
+    --metrics test_MAE test_RMSE val_MAE val_RMSE
   log "Wrote report/tables/summary.csv"
 }
+
+
 
 # ----------------------------- driver ---------------------------------
 main() {

@@ -106,19 +106,23 @@ class TrainCfg:
     ema_decay: float = 0.999
     amp: bool = False
 
-    # Calibration (classification-only; no-op for regression unless --is-classification is set)
-    p.add_argument("--is-classification", action="store_true",
-                   help="Enable classification path (collect logits/labels, accuracy/NLL/ECE, and optional calibration).")
-    p.add_argument("--calibration-kind", type=str, default="none",
-                   choices=["none","temperature","vector","matrix","dirichlet_simple","dirichlet_full","isotonic"],
-                   help="Post-hoc calibrator to fit on validation logits.")
-    p.add_argument("--calibration-optimizer", type=str, default="lbfgs", choices=["lbfgs","adam"])
-    p.add_argument("--calibration-lr", type=float, default=0.1)
-    p.add_argument("--calibration-max-iters", type=int, default=300)
-    p.add_argument("--calibration-l2", type=float, default=1e-4, help="Regularization for matrix/dirichlet calibrators.")
-    p.add_argument("--calibration-verbose", action="store_true")
 
-    
+
+
+@dataclass
+class CalibCfg:
+    # Set True only for classification experiments; ESOL regression should keep this False.
+    is_classification: bool = False
+
+    # Post-hoc calibrator selection (no-op for regression unless is_classification=True)
+    calibration_kind: str = "none"  # one of: none|temperature|vector|matrix|dirichlet_simple|dirichlet_full|isotonic
+
+    # Fitting hyper-params (used only if calibration_kind != "none")
+    calibration_optimizer: str = "lbfgs"  # lbfgs|adam
+    calibration_lr: float = 0.1
+    calibration_max_iters: int = 300
+    calibration_l2: float = 1e-4
+    calibration_verbose: bool = False
 
 
 @dataclass
@@ -139,11 +143,14 @@ class RootCfg:
     model: ModelCfg = field(default_factory=ModelCfg)
     train: TrainCfg = field(default_factory=TrainCfg)
     runtime: RuntimeCfg = field(default_factory=RuntimeCfg)
-    calib: CalibCfg = field(default_factory=CalibCfg) 
+    calib: CalibCfg = field(default_factory=CalibCfg)
+
     # Alias for split strategy to match DoD (eval=scaffold/random)
     eval: str = "scaffold"  # scaffold | random
 
+    # Optional top-level alias for seed (mapped into runtime.seed below)
     seed: Optional[int] = None
+
 # Register config with Hydra so @hydra.main can instantiate it
 cs = ConfigStore.instance()
 cs.store(name="train_config", node=RootCfg)
@@ -250,16 +257,16 @@ def _compose_loop_argv(cfg: RootCfg, original_cwd: str) -> List[str]:
 
 
     # Calibration (classification-only; forwarded to src.train.loop argparse)
-    if cfg.calib.is_classification:
+    if hasattr(cfg, "calib") and getattr(cfg.calib, "is_classification", False):
         args.append("--is-classification")
-    if cfg.calib.calibration_kind and cfg.calib.calibration_kind != "none":
-        args += ["--calibration-kind", cfg.calib.calibration_kind]
-        args += ["--calibration-optimizer", cfg.calib.calibration_optimizer]
-        args += ["--calibration-lr", str(cfg.calib.calibration_lr)]
-        args += ["--calibration-max-iters", str(cfg.calib.calibration_max_iters)]
-        args += ["--calibration-l2", str(cfg.calib.calibration_l2)]
-        if cfg.calib.calibration_verbose:
-            args.append("--calibration-verbose")
+        if cfg.calib.calibration_kind and cfg.calib.calibration_kind != "none":
+            args += ["--calibration-kind", cfg.calib.calibration_kind]
+            args += ["--calibration-optimizer", cfg.calib.calibration_optimizer]
+            args += ["--calibration-lr", str(cfg.calib.calibration_lr)]
+            args += ["--calibration-max-iters", str(cfg.calib.calibration_max_iters)]
+            args += ["--calibration-l2", str(cfg.calib.calibration_l2)]
+            if cfg.calib.calibration_verbose:
+                args.append("--calibration-verbose")
 
 
 

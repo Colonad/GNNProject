@@ -19,6 +19,9 @@ from typing import Iterable, Literal, Sequence, Tuple, Dict, Any, List, Optional
 import math
 import os
 import random
+import pickle
+import shutil
+
 
 import numpy as np
 import torch
@@ -170,13 +173,31 @@ def random_split(
 def load_dataset(cfg: ESOLConfig):
     """
     Load ESOL via PyG MoleculeNet. Returns the PyG dataset object.
-    Applies limit_n if provided.
+    Applies limit_n if provided. If a corrupted/incompatible cache is detected,
+    delete the ESOL directory and rebuild once.
     """
-    ds = MoleculeNet(root=cfg.root, name="ESOL")
+    # PyG will internally use something like root = os.path.join(cfg.root, "ESOL")
+    esol_root = os.path.join(cfg.root, "ESOL")
+
+    try:
+        ds = MoleculeNet(root=cfg.root, name="ESOL")
+    except (pickle.UnpicklingError, EOFError, RuntimeError) as e:
+        # This catches the "invalid load key, 'v'" error and similar cache issues
+        print(f"[ESOL] Detected corrupted or incompatible cache ({type(e).__name__}: {e}).")
+        print(f"[ESOL] Removing cached directory {esol_root!r} and rebuilding dataset...")
+
+        if os.path.isdir(esol_root):
+            shutil.rmtree(esol_root)
+
+        # Retry once after cleanup
+        ds = MoleculeNet(root=cfg.root, name="ESOL")
+
     if cfg.limit_n is not None:
         # MoleculeNet returns an InMemoryDataset, slicing preserves attributes.
         ds = ds[: int(cfg.limit_n)]
     return ds
+
+
 
 
 @torch.no_grad()

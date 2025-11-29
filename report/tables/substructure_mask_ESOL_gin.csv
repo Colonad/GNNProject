@@ -1,0 +1,22 @@
+dataset,model,run_dir,idx,smiles,mask_type,baseline_pred,masked_pred,delta
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,82,NC(=S)N,baseline,-20.268449783325195,-20.268449783325195,0.0
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,82,NC(=S)N,hetero_atoms,-20.268449783325195,-29.56082534790039,-9.292375564575195
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,530,O2c1ccccc1N(C)C(=O)c3cccnc23 ,baseline,-28.42171287536621,-28.42171287536621,0.0
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,530,O2c1ccccc1N(C)C(=O)c3cccnc23 ,ring_atoms,-28.42171287536621,-60.949031829833984,-32.52731895446777
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,530,O2c1ccccc1N(C)C(=O)c3cccnc23 ,hetero_atoms,-28.42171287536621,-25.33364486694336,3.0880680084228516
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,621,ClC(Cl)(Cl)C(NC=O)N1C=CN(C=C1)C(NC=O)C(Cl)(Cl)Cl ,baseline,-26.141714096069336,-26.141714096069336,0.0
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,621,ClC(Cl)(Cl)C(NC=O)N1C=CN(C=C1)C(NC=O)C(Cl)(Cl)Cl ,ring_atoms,-26.141714096069336,-28.363290786743164,-2.221576690673828
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,621,ClC(Cl)(Cl)C(NC=O)N1C=CN(C=C1)C(NC=O)C(Cl)(Cl)Cl ,hetero_atoms,-26.141714096069336,-28.39528465270996,-2.253570556640625
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,788,CCCCCCCCCCCCCCCCCCO,baseline,-28.705053329467773,-28.705053329467773,0.0
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,788,CCCCCCCCCCCCCCCCCCO,hetero_atoms,-28.705053329467773,-28.697315216064453,0.0077381134033203125
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,829,CN(C)C(=O)OC1=CC(=O)CC(C)(C)C1 ,baseline,-25.860340118408203,-25.860340118408203,0.0
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,829,CN(C)C(=O)OC1=CC(=O)CC(C)(C)C1 ,ring_atoms,-25.860340118408203,-34.51350021362305,-8.653160095214844
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,829,CN(C)C(=O)OC1=CC(=O)CC(C)(C)C1 ,hetero_atoms,-25.860340118408203,-25.9875545501709,-0.1272144317626953
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,861,NS(=O)(=O)c3cc2c(NC(Cc1ccccc1)NS2(=O)=O)cc3C(F)(F)F,baseline,-29.3477783203125,-29.3477783203125,0.0
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,861,NS(=O)(=O)c3cc2c(NC(Cc1ccccc1)NS2(=O)=O)cc3C(F)(F)F,ring_atoms,-29.3477783203125,-43.508506774902344,-14.160728454589844
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,861,NS(=O)(=O)c3cc2c(NC(Cc1ccccc1)NS2(=O)=O)cc3C(F)(F)F,hetero_atoms,-29.3477783203125,-29.198760986328125,0.149017333984375
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,995,CC34CCC1C(CCC2=CC(=O)CCC12O)C3CCC4(O)C#C,baseline,-32.21181106567383,-32.21181106567383,0.0
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,995,CC34CCC1C(CCC2=CC(=O)CCC12O)C3CCC4(O)C#C,ring_atoms,-32.21181106567383,-57.61196517944336,-25.40015411376953
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,995,CC34CCC1C(CCC2=CC(=O)CCC12O)C3CCC4(O)C#C,hetero_atoms,-32.21181106567383,-32.129234313964844,0.08257675170898438
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,1047,CSSC,baseline,-22.364971160888672,-22.364971160888672,0.0
+ESOL,gin,/mnt/c/Users/Angel Colon/Desktop/GNNProject/runs/esol_gin_scaffold_seed0_20251128-205854,1047,CSSC,hetero_atoms,-22.364971160888672,-28.740718841552734,-6.3757476806640625

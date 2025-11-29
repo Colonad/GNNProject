@@ -579,6 +579,22 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--warmup-epochs", type=int, default=0,
                    help="Linear warmup epochs for cosine_warmup scheduler.")
 
+
+    # Classification / calibration
+    p.add_argument("--is-classification", action="store_true",
+                   help="Enable classification path (logits, accuracy/NLL/ECE, calibration).")
+    p.add_argument("--calibration-kind", type=str, default="none",
+                   choices=["none", "temperature", "vector", "matrix",
+                            "dirichlet_simple", "dirichlet_full", "isotonic"])
+    p.add_argument("--calibration-optimizer", type=str, default="lbfgs",
+                   choices=["lbfgs", "adam"])
+    p.add_argument("--calibration-lr", type=float, default=0.1)
+    p.add_argument("--calibration-max-iters", type=int, default=300)
+    p.add_argument("--calibration-l2", type=float, default=1e-4)
+    p.add_argument("--calibration-verbose", action="store_true")
+
+
+
     return p
 
 

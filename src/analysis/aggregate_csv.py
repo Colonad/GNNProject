@@ -135,18 +135,31 @@ def _read_csv_rows(path: str) -> List[Dict[str, Any]]:
     return rows
 
 def _select_latest_test_row(rows: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    """Choose the last/most-recent 'test' row. Prefer max epoch if 'epoch' exists and is numeric."""
-    test_rows = [r for r in rows if str(r.get("split", "")).strip().lower() == "test"]
-    if not test_rows:
+    """
+    Choose the row corresponding to the test split.
+
+    - If there are explicit rows with split == "test", pick the most recent one
+      (max epoch, then max step), matching the old baseline logging style.
+    - If there are NO such rows (e.g. our new GNN loop writes a single
+      summary row that already contains val_* and test_* columns), just
+      return the last row in the CSV.
+    """
+    if not rows:
         return None
-    # If epoch exists and is numeric, pick max epoch
-    def _epoch_val(r: Dict[str, Any]) -> Tuple[int, int]:
-        e = _to_float_or_none(r.get("epoch"))
-        step = _to_float_or_none(r.get("step"))
-        return (int(e) if e is not None else -1, int(step) if step is not None else -1)
-    # Sort by epoch then step, pick last
-    test_rows.sort(key=_epoch_val)
-    return test_rows[-1]
+
+    # Old-style logs: multiple rows with split=train/val/test
+    test_rows = [r for r in rows if str(r.get("split", "")).strip().lower() == "test"]
+    if test_rows:
+        def _epoch_val(r: Dict[str, Any]) -> Tuple[int, int]:
+            e = _to_float_or_none(r.get("epoch"))
+            step = _to_float_or_none(r.get("step"))
+            return (int(e) if e is not None else -1,
+                    int(step) if step is not None else -1)
+        test_rows.sort(key=_epoch_val)
+        return test_rows[-1]
+
+    # New-style logs: per-run summary only (no split column or no "test" rows)
+    return rows[-1]
 
 # -------------------------------
 # Core aggregation

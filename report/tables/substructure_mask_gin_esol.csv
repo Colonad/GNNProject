@@ -1,0 +1,33 @@
+dataset,model,run_dir,idx,smiles,mask_type,baseline_pred,masked_pred,delta
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,82,NC(=S)N,baseline,-0.5467708110809326,-0.5467708110809326,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,82,NC(=S)N,hetero_atoms,-0.5467708110809326,-0.17951300740242004,0.3672578036785126
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,447,CCCCCc1ccccc1,baseline,-3.1733689308166504,-3.1733689308166504,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,447,CCCCCc1ccccc1,ring_atoms,-3.1733689308166504,-1.2390437126159668,1.9343252182006836
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,530,O2c1ccccc1N(C)C(=O)c3cccnc23 ,baseline,-3.4011151790618896,-3.4011151790618896,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,530,O2c1ccccc1N(C)C(=O)c3cccnc23 ,ring_atoms,-3.4011151790618896,-1.5704795122146606,1.830635666847229
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,530,O2c1ccccc1N(C)C(=O)c3cccnc23 ,hetero_atoms,-3.4011151790618896,0.4181383550167084,3.819253534078598
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,621,ClC(Cl)(Cl)C(NC=O)N1C=CN(C=C1)C(NC=O)C(Cl)(Cl)Cl ,baseline,-4.256002426147461,-4.256002426147461,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,621,ClC(Cl)(Cl)C(NC=O)N1C=CN(C=C1)C(NC=O)C(Cl)(Cl)Cl ,ring_atoms,-4.256002426147461,-0.684111475944519,3.571890950202942
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,621,ClC(Cl)(Cl)C(NC=O)N1C=CN(C=C1)C(NC=O)C(Cl)(Cl)Cl ,hetero_atoms,-4.256002426147461,0.18699386715888977,4.442996293306351
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,733,C1(=O)NC(=O)NC(=O)C1(O)C2(O)C(=O)NC(=O)NC2(=O),baseline,-2.8520760536193848,-2.8520760536193848,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,733,C1(=O)NC(=O)NC(=O)C1(O)C2(O)C(=O)NC(=O)NC2(=O),ring_atoms,-2.8520760536193848,0.17173418402671814,3.023810237646103
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,733,C1(=O)NC(=O)NC(=O)C1(O)C2(O)C(=O)NC(=O)NC2(=O),hetero_atoms,-2.8520760536193848,0.12643909454345703,2.978515148162842
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,788,CCCCCCCCCCCCCCCCCCO,baseline,-6.047539710998535,-6.047539710998535,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,788,CCCCCCCCCCCCCCCCCCO,hetero_atoms,-6.047539710998535,-5.290319442749023,0.7572202682495117
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,829,CN(C)C(=O)OC1=CC(=O)CC(C)(C)C1 ,baseline,-1.7339653968811035,-1.7339653968811035,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,829,CN(C)C(=O)OC1=CC(=O)CC(C)(C)C1 ,ring_atoms,-1.7339653968811035,-0.16669884324073792,1.5672665536403656
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,829,CN(C)C(=O)OC1=CC(=O)CC(C)(C)C1 ,hetero_atoms,-1.7339653968811035,-0.24651403725147247,1.487451359629631
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,861,NS(=O)(=O)c3cc2c(NC(Cc1ccccc1)NS2(=O)=O)cc3C(F)(F)F,baseline,-5.748990058898926,-5.748990058898926,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,861,NS(=O)(=O)c3cc2c(NC(Cc1ccccc1)NS2(=O)=O)cc3C(F)(F)F,ring_atoms,-5.748990058898926,-0.6223871111869812,5.126602947711945
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,861,NS(=O)(=O)c3cc2c(NC(Cc1ccccc1)NS2(=O)=O)cc3C(F)(F)F,hetero_atoms,-5.748990058898926,-0.2087990790605545,5.540190979838371
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,976,CC12CCC(CC1)C(C)(C)O2,baseline,-2.4864370822906494,-2.4864370822906494,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,976,CC12CCC(CC1)C(C)(C)O2,ring_atoms,-2.4864370822906494,-1.2727758884429932,1.2136611938476562
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,976,CC12CCC(CC1)C(C)(C)O2,hetero_atoms,-2.4864370822906494,-3.063394784927368,-0.5769577026367188
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,995,CC34CCC1C(CCC2=CC(=O)CCC12O)C3CCC4(O)C#C,baseline,-3.876729726791382,-3.876729726791382,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,995,CC34CCC1C(CCC2=CC(=O)CCC12O)C3CCC4(O)C#C,ring_atoms,-3.876729726791382,-1.0829209089279175,2.7938088178634644
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,995,CC34CCC1C(CCC2=CC(=O)CCC12O)C3CCC4(O)C#C,hetero_atoms,-3.876729726791382,-2.942709445953369,0.9340202808380127
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,1033,CCCN(CCC)c1c(cc(cc1N(=O)=O)S(N)(=O)=O)N(=O)=O,baseline,-4.7314133644104,-4.7314133644104,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,1033,CCCN(CCC)c1c(cc(cc1N(=O)=O)S(N)(=O)=O)N(=O)=O,ring_atoms,-4.7314133644104,-0.5145979523658752,4.216815412044525
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,1033,CCCN(CCC)c1c(cc(cc1N(=O)=O)S(N)(=O)=O)N(=O)=O,hetero_atoms,-4.7314133644104,-0.08707776665687561,4.644335597753525
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,1047,CSSC,baseline,-1.756796956062317,-1.756796956062317,0.0
+ESOL,gin,/home/tobi/GNNProject/runs/esol_gin_scaffold_seed0_20251129-011625,1047,CSSC,hetero_atoms,-1.756796956062317,-0.11618617177009583,1.640610784292221
