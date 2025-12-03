@@ -17,7 +17,7 @@ pip install -r requirements.txt
 ## Run a smoke test
 
 ```bash
-make test
+pytest -q
 ```
 
 ## Project structure (initial)
