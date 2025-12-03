@@ -254,29 +254,6 @@ run_exp_E() {
   local split="scaffold"
   local best_L=6
 
-  # Example (uncomment/change if your datamodule supports these):
-  #   FEAT_DROPS=("aromaticity" "formal_charge")
-  # for feat in "${FEAT_DROPS[@]}"; do
-  #   for seed in "${SEEDS[@]}"; do
-  #     log "E | GIN drop=${feat} | seed=${seed}"
-  #     python -m src.cli.train \
-  #       $(train_common) \
-  #       "eval=${split}" \
-  #       "model=gin" \
-  #       "model.num_layers=${best_L}" \
-  #       "data.node_feats.drop=[${feat}]" \
-  #       "seed=${seed}"
-  #     log "E | MPNN drop=${feat} | seed=${seed}"
-  #     python -m src.cli.train \
-  #       $(train_common) \
-  #       "eval=${split}" \
-  #       "model=mpnn" \
-  #       "model.num_layers=${best_L}" \
-  #       "data.node_feats.drop=[${feat}]" \
-  #       "seed=${seed}"
-  #   done
-  # done
-
   # Proxy: run “no-ablation” to keep the directory structure predictable; update once flags exist.
   for seed in "${SEEDS[@]}"; do
     log "E | Proxy (no ablation) GIN | seed=${seed}"
